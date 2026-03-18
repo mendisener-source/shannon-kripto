@@ -126,7 +126,14 @@ canvas{width:100%;border-radius:8px;background:var(--bg)}
       <div class="kur-label">USD/TL Kuru</div>
       <div class="kur-time" id="kur-time">Güncelleniyor...</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <input id="kur-manuel" type="number" inputmode="decimal" step="0.01" placeholder="Manuel gir"
+        style="width:100px;background:var(--bg);border:1px solid var(--border);border-radius:6px;
+        color:var(--text);font-family:'Share Tech Mono',monospace;font-size:15px;
+        padding:5px 8px;outline:none;-webkit-appearance:none"
+        onfocus="this.style.borderColor='var(--blue)'"
+        onblur="this.style.borderColor='var(--border)'"
+        onchange="setManuelKur(this.value)">
       <div class="kur-val" id="kur-val">—</div>
       <button onclick="fetchKur()" style="background:rgba(0,229,255,.1);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">⟳</button>
     </div>
@@ -246,6 +253,16 @@ function showTab(el){
 }
 
 // ── KUR ───────────────────────────────────────────────────────────────────────
+function setManuelKur(v){
+  var n=parseFloat(v);
+  if(isNaN(n)||n<=0)return;
+  kurVal=n;
+  document.getElementById('kur-val').textContent=kurVal.toFixed(2);
+  document.getElementById('kur-time').textContent='Manuel girildi: '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  updateTLPreview();
+  save();
+}
+
 async function fetchKur(){
   document.getElementById('kur-val').innerHTML='<span class="spinner"></span>';
   try{
