@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kripto">
+<title>Kripto Portföy</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c0f;--surface:#111417;--card:#161a1f;--border:#1e2530;
+  --accent:#f7931a;--green:#00ff88;--red:#ff3860;--yellow:#ffd600;
+  --text:#e0e8f0;--muted:#5a6a7a;--blue:#00e5ff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden}
+body{padding-bottom:80px}
+header{position:sticky;top:0;z-index:100;background:#0d1117;border-bottom:1px solid var(--accent);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.h-title{font-size:18px;font-weight:700;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--accent),var(--yellow));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.h-sub{font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.h-right{text-align:right}
+.h-total-usd{font-size:20px;font-weight:700;font-family:'Share Tech Mono',monospace;color:var(--accent)}
+.h-total-tl{font-size:13px;font-family:'Share Tech Mono',monospace;color:var(--muted)}
+.h-label{font-size:10px;color:var(--muted)}
+.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:62px;z-index:99}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;
+  letter-spacing:1px;color:var(--muted);border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .2s;text-transform:uppercase}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(247,147,26,.05)}
+.section{display:none;padding:12px}.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.kur-bar{background:rgba(0,229,255,.08);border:1px solid var(--blue);border-radius:10px;
+  padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.kur-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.kur-val{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--blue)}
+.kur-time{font-size:10px;color:var(--muted)}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ov-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.ov-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.ov-val{font-family:'Share Tech Mono',monospace;font-size:17px;margin-top:4px}
+.ov-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
+.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--muted)}
+.inp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:24px;
+  padding:12px;outline:none;-webkit-appearance:none;transition:border-color .2s;text-align:center}
+.inp:focus{border-color:var(--accent)}
+.inp-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--accent),#c87000);color:#000;
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:10px}
+.btn.blue{background:linear-gradient(135deg,var(--blue),#0055aa);color:#000}
+.btn.outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* Haftalık özet */
+.week-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px}
+.week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.week-title{font-size:13px;font-weight:700;color:var(--muted)}
+.week-val{font-family:'Share Tech Mono',monospace;font-size:15px}
+.week-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.week-stat{background:var(--bg);border-radius:6px;padding:6px;text-align:center}
+.week-stat-l{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.week-stat-v{font-family:'Share Tech Mono',monospace;font-size:12px;margin-top:2px}
+/* Grafik */
+canvas{width:100%;border-radius:8px;background:var(--bg)}
+.range-btns{display:flex;gap:6px;margin-bottom:10px}
+.range-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:11px;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-weight:700}
+.range-btn.active{border-color:var(--accent);background:rgba(247,147,26,.15);color:var(--accent)}
+/* Geçmiş */
+.hist-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.hist-row:last-child{border-bottom:none}
+.hist-left{flex:1}
+.hist-date{font-size:11px;color:var(--muted)}
+.hist-usd{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--accent)}
+.hist-tl{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)}
+.hist-right{text-align:right}
+.hist-ch{font-family:'Share Tech Mono',monospace;font-size:12px}
+.del-btn{background:rgba(255,56,96,.1);border:1px solid var(--red);color:var(--red);
+  border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;margin-top:4px;display:block}
+#alert{position:fixed;bottom:20px;left:16px;right:16px;z-index:999;padding:12px 16px;
+  border-radius:10px;font-size:14px;font-weight:700;display:none;
+  align-items:center;justify-content:center;text-align:center}
+#alert.ok{background:var(--green);color:#000}
+#alert.err{background:var(--red);color:#fff}
+#alert.info{background:var(--blue);color:#000}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--muted);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-title">₿ KRİPTO TAKİP</div>
+    <div class="h-sub" id="last-update">Son giriş: —</div>
+  </div>
+  <div class="h-right">
+    <div class="h-label">PORTFÖY</div>
+    <div class="h-total-usd" id="header-usd">—</div>
+    <div class="h-total-tl" id="header-tl">—</div>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" data-tab="overview" onclick="showTab(this)">📊 Özet</div>
+  <div class="tab" data-tab="entry" onclick="showTab(this)">➕ Giriş</div>
+  <div class="tab" data-tab="chart" onclick="showTab(this)">📈 Grafik</div>
+  <div class="tab" data-tab="history" onclick="showTab(this)">📋 Geçmiş</div>
+</div>
+
+<!-- ÖZET -->
+<div id="tab-overview" class="section active">
+  <!-- Kur -->
+  <div class="kur-bar">
+    <div>
+      <div class="kur-label">USD/TL Kuru</div>
+      <div class="kur-time" id="kur-time">Güncelleniyor...</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="kur-val" id="kur-val">—</div>
+      <button onclick="fetchKur()" style="background:rgba(0,229,255,.1);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">⟳</button>
+    </div>
+  </div>
+
+  <!-- Genel istatistikler -->
+  <div class="ov-grid">
+    <div class="ov-card">
+      <div class="ov-label">Güncel ($)</div>
+      <div class="ov-val" id="ov-usd">—</div>
+      <div class="ov-sub" id="ov-tl">—</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-label">Toplam Büyüme</div>
+      <div class="ov-val neu" id="ov-growth-usd">—</div>
+      <div class="ov-sub" id="ov-growth-tl">—</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-label">Haftalık ($)</div>
+      <div class="ov-val neu" id="ov-weekly-usd">—</div>
+      <div class="ov-sub" id="ov-weekly-tl">—</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-label">Aylık ($)</div>
+      <div class="ov-val neu" id="ov-monthly-usd">—</div>
+      <div class="ov-sub" id="ov-monthly-tl">—</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-label">Günlük ($)</div>
+      <div class="ov-val neu" id="ov-daily-usd">—</div>
+      <div class="ov-sub" id="ov-daily-tl">—</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-label">En Yüksek</div>
+      <div class="ov-val" id="ov-high" style="color:var(--green)">—</div>
+      <div class="ov-sub" id="ov-high-tl">—</div>
+    </div>
+  </div>
+
+  <!-- Haftalık özetler -->
+  <div class="sec-title"><span class="dot" style="background:var(--accent)"></span>HAFTALIK ÖZETLER</div>
+  <div id="weekly-summary"></div>
+</div>
+
+<!-- GİRİŞ -->
+<div id="tab-entry" class="section">
+  <div class="sec-title"><span class="dot" style="background:var(--accent)"></span>YENİ GİRİŞ</div>
+  <div class="card">
+    <label class="inp-label">PORTFÖY DEĞERİ ($)</label>
+    <input class="inp" type="number" inputmode="decimal" step="0.01" placeholder="0.00" id="inp-usd">
+    <div id="tl-preview" style="text-align:center;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted)">TL karşılığı: —</div>
+    <button class="btn" onclick="saveEntry()">💾 KAYDET</button>
+  </div>
+
+  <div class="card" style="background:rgba(0,229,255,.04);border-color:var(--blue)">
+    <div style="font-size:13px;color:var(--blue);font-weight:700;margin-bottom:8px">ℹ️ Giriş Rehberi</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6">
+      • Botunuzun toplam portföy değerini <b style="color:var(--text)">dolar ($)</b> cinsinden girin<br>
+      • TL karşılığı otomatik hesaplanır<br>
+      • Günlük veya haftalık girebilirsiniz
+    </div>
+  </div>
+</div>
+
+<!-- GRAFİK -->
+<div id="tab-chart" class="section">
+  <div class="card" style="padding:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="sec-title" style="margin:0;border:none;padding:0"><span class="dot" style="background:var(--accent)"></span>$ BÜYÜME</div>
+      <div class="range-btns">
+        <button class="range-btn active" onclick="setRange(7,this)">1H</button>
+        <button class="range-btn" onclick="setRange(30,this)">1A</button>
+        <button class="range-btn" onclick="setRange(0,this)">TÜM</button>
+      </div>
+    </div>
+    <canvas id="chart-usd" height="180"></canvas>
+  </div>
+  <div class="card" style="padding:10px;margin-top:0">
+    <div class="sec-title" style="margin-bottom:8px"><span class="dot" style="background:var(--blue)"></span>₺ BÜYÜME</div>
+    <canvas id="chart-tl" height="140"></canvas>
+  </div>
+  <div class="card" style="padding:10px;margin-top:0">
+    <div class="sec-title" style="margin-bottom:8px"><span class="dot" style="background:var(--green)"></span>% BÜYÜME (Başlangıçtan)</div>
+    <canvas id="chart-pct" height="140"></canvas>
+  </div>
+</div>
+
+<!-- GEÇMİŞ -->
+<div id="tab-history" class="section">
+  <div class="sec-title"><span class="dot" style="background:var(--yellow)"></span>TÜM GİRİŞLER</div>
+  <div class="card" id="hist-container">
+    <div style="text-align:center;color:var(--muted);padding:20px">Henüz giriş yok</div>
+  </div>
+</div>
+
+<div id="alert"><span id="alert-text"></span></div>
+
+<script>
+var entries=[]; // {date, usd, tl, kur}
+var kurVal=0;
+var chartRange=7;
+
+window.onload=function(){load();fetchKur();render();};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function fmt2(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTL(n){return Math.round(n).toLocaleString('tr-TR');}
+function fmtPct(n){return(n>=0?'+':'')+n.toFixed(2)+'%';}
+function cls(n){return n>0?'pos':n<0?'neg':'neu';}
+
+function showTab(el){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('tab-'+el.dataset.tab).classList.add('active');
+  if(el.dataset.tab==='chart')setTimeout(drawCharts,50);
+}
+
+// ── KUR ───────────────────────────────────────────────────────────────────────
+async function fetchKur(){
+  document.getElementById('kur-val').innerHTML='<span class="spinner"></span>';
+  try{
+    var res=await fetch('https://query1.finance.yahoo.com/v8/finance/chart/USDTRY=X?interval=1d&range=1d');
+    if(!res.ok)throw new Error();
+    var data=await res.json();
+    var meta=data?.chart?.result?.[0]?.meta;
+    if(!meta)throw new Error();
+    kurVal=meta.regularMarketPrice||0;
+    document.getElementById('kur-val').textContent=kurVal.toFixed(2);
+    document.getElementById('kur-time').textContent='Güncellendi: '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    updateTLPreview();
+    save();
+  }catch(e){
+    document.getElementById('kur-val').textContent=kurVal>0?kurVal.toFixed(2):'—';
+    document.getElementById('kur-time').textContent='Güncel kur alınamadı';
+  }
+}
+
+function updateTLPreview(){
+  var v=parseFloat(document.getElementById('inp-usd').value)||0;
+  var tl=v*kurVal;
+  document.getElementById('tl-preview').textContent=tl>0?'≈ ₺'+fmtTL(tl)+(kurVal>0?' (Kur: '+kurVal.toFixed(2)+')':''):'TL karşılığı: —';
+}
+document.getElementById('inp-usd').addEventListener('input',updateTLPreview);
+
+// ── GİRİŞ ─────────────────────────────────────────────────────────────────────
+function saveEntry(){
+  var v=parseFloat(document.getElementById('inp-usd').value);
+  if(isNaN(v)||v<=0){showAlert('err','Geçerli bir değer girin!');return;}
+  var tl=kurVal>0?v*kurVal:0;
+  entries.push({date:new Date().toISOString(),usd:v,tl:tl,kur:kurVal});
+  document.getElementById('inp-usd').value='';
+  document.getElementById('tl-preview').textContent='TL karşılığı: —';
+  save();render();
+  showAlert('ok','$'+fmt2(v)+' kaydedildi!'+(tl>0?' (₺'+fmtTL(tl)+')':''));
+}
+
+function deleteEntry(i){entries.splice(i,1);save();render();showAlert('ok','Giriş silindi');}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  if(entries.length===0){
+    document.getElementById('header-usd').textContent='—';
+    document.getElementById('header-tl').textContent='—';
+    document.getElementById('last-update').textContent='Son giriş: —';
+    ['ov-usd','ov-tl','ov-growth-usd','ov-growth-tl','ov-weekly-usd','ov-weekly-tl',
+     'ov-monthly-usd','ov-monthly-tl','ov-daily-usd','ov-daily-tl','ov-high','ov-high-tl'].forEach(function(id){
+      var el=document.getElementById(id);if(el){el.textContent='—';el.className=el.className.replace(/pos|neg/,'');}
+    });
+    document.getElementById('weekly-summary').innerHTML='<div style="text-align:center;color:var(--muted);padding:16px;font-size:13px">Henüz giriş yok</div>';
+    document.getElementById('hist-container').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">Henüz giriş yok</div>';
+    return;
+  }
+
+  var last=entries[entries.length-1];
+  var first=entries[0];
+  var now=new Date();
+
+  // Header
+  document.getElementById('header-usd').textContent='$'+fmt2(last.usd);
+  document.getElementById('header-tl').textContent=last.tl>0?'₺'+fmtTL(last.tl):'';
+  document.getElementById('last-update').textContent='Son: '+new Date(last.date).toLocaleDateString('tr-TR');
+
+  // Güncel
+  setText('ov-usd','$'+fmt2(last.usd),'ov-val');
+  setText('ov-tl',last.tl>0?'₺'+fmtTL(last.tl):'—','ov-sub');
+
+  // En yüksek
+  var high=Math.max.apply(null,entries.map(function(e){return e.usd;}));
+  var highTL=Math.max.apply(null,entries.filter(function(e){return e.tl>0;}).map(function(e){return e.tl;}));
+  setText('ov-high','$'+fmt2(high),'ov-val');
+  setText('ov-high-tl',highTL>0?'₺'+fmtTL(highTL):'—','ov-sub');
+
+  // Toplam büyüme
+  setPct2('ov-growth-usd','ov-growth-tl',last.usd,last.tl,first.usd,first.tl);
+
+  // Günlük (dün)
+  var yesterday=new Date(now);yesterday.setDate(yesterday.getDate()-1);
+  var dayEntry=getClosest(yesterday);
+  if(dayEntry)setPct2('ov-daily-usd','ov-daily-tl',last.usd,last.tl,dayEntry.usd,dayEntry.tl);
+
+  // Haftalık
+  var weekAgo=new Date(now);weekAgo.setDate(weekAgo.getDate()-7);
+  var weekEntry=getClosest(weekAgo);
+  if(weekEntry)setPct2('ov-weekly-usd','ov-weekly-tl',last.usd,last.tl,weekEntry.usd,weekEntry.tl);
+
+  // Aylık
+  var monthAgo=new Date(now);monthAgo.setDate(monthAgo.getDate()-30);
+  var monthEntry=getClosest(monthAgo);
+  if(monthEntry)setPct2('ov-monthly-usd','ov-monthly-tl',last.usd,last.tl,monthEntry.usd,monthEntry.tl);
+
+  renderWeeklySummary();
+  renderHistory();
+}
+
+function getClosest(targetDate){
+  var result=null;
+  for(var i=0;i<entries.length;i++){
+    if(new Date(entries[i].date)<=targetDate)result=entries[i];
+  }
+  return result;
+}
+
+function setText(id,val,base){var el=document.getElementById(id);if(el)el.textContent=val;}
+
+function setPct2(idUsd,idTl,curUsd,curTl,prevUsd,prevTl){
+  var elU=document.getElementById(idUsd);
+  var elT=document.getElementById(idTl);
+  if(!elU||!prevUsd)return;
+  var pU=(curUsd-prevUsd)/prevUsd*100;
+  var diff='$'+fmt2(curUsd-prevUsd);
+  elU.textContent=fmtPct(pU)+' ('+diff+')';
+  elU.className='ov-val '+cls(pU);
+  if(elT&&curTl>0&&prevTl>0){var pT=(curTl-prevTl)/prevTl*100;elT.textContent=fmtPct(pT)+' TL';elT.className='ov-sub '+cls(pT);}
+}
+
+function renderWeeklySummary(){
+  // Girişleri haftaya göre grupla
+  var weeks={};
+  entries.forEach(function(e){
+    var d=new Date(e.date);
+    var y=d.getFullYear();
+    var w=getWeekNum(d);
+    var key=y+'-W'+w;
+    if(!weeks[key])weeks[key]={entries:[],year:y,week:w};
+    weeks[key].entries.push(e);
+  });
+  var keys=Object.keys(weeks).sort();
+  var html='';
+  keys.slice(-8).reverse().forEach(function(key){
+    var wk=weeks[key];
+    var last=wk.entries[wk.entries.length-1];
+    var first=wk.entries[0];
+    var pct=(last.usd-first.usd)/first.usd*100;
+    var pctTl=first.tl>0&&last.tl>0?(last.tl-first.tl)/first.tl*100:null;
+    html+='<div class="week-card"><div class="week-header">';
+    html+='<div class="week-title">'+wk.year+' Hafta '+wk.week+'</div>';
+    html+='<div style="text-align:right"><div class="week-val" style="color:var(--accent)">$'+fmt2(last.usd)+'</div>';
+    if(last.tl>0)html+='<div style="font-family:\'Share Tech Mono\',monospace;font-size:11px;color:var(--muted)">₺'+fmtTL(last.tl)+'</div>';
+    html+='</div></div><div class="week-stats">';
+    html+='<div class="week-stat"><div class="week-stat-l">Haftalık $</div><div class="week-stat-v '+cls(pct)+'">'+fmtPct(pct)+'</div></div>';
+    html+='<div class="week-stat"><div class="week-stat-l">Haftalık ₺</div><div class="week-stat-v '+(pctTl!==null?cls(pctTl):'neu')+'">'+(pctTl!==null?fmtPct(pctTl):'—')+'</div></div>';
+    html+='<div class="week-stat"><div class="week-stat-l">Giriş</div><div class="week-stat-v neu">'+wk.entries.length+' adet</div></div>';
+    html+='</div></div>';
+  });
+  document.getElementById('weekly-summary').innerHTML=html||'<div style="text-align:center;color:var(--muted);padding:16px">Henüz yeterli veri yok</div>';
+}
+
+function getWeekNum(d){var s=new Date(d.getFullYear(),0,1);return Math.ceil(((d-s)/86400000+s.getDay()+1)/7);}
+
+function renderHistory(){
+  var c=document.getElementById('hist-container');
+  var reversed=entries.slice().reverse();
+  c.innerHTML=reversed.map(function(e,ri){
+    var i=entries.length-1-ri;
+    var prev=i>0?entries[i-1]:null;
+    var d=new Date(e.date);
+    var chUsd=prev?((e.usd-prev.usd)/prev.usd*100):null;
+    var chTl=prev&&prev.tl>0&&e.tl>0?((e.tl-prev.tl)/prev.tl*100):null;
+    return '<div class="hist-row"><div class="hist-left">'+
+      '<div class="hist-date">'+d.toLocaleDateString('tr-TR')+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})+'</div>'+
+      '<div class="hist-usd">$'+fmt2(e.usd)+'</div>'+
+      (e.tl>0?'<div class="hist-tl">₺'+fmtTL(e.tl)+' ('+e.kur.toFixed(2)+')</div>':'')+
+      '</div><div class="hist-right">'+
+      (chUsd!==null?'<div class="hist-ch '+cls(chUsd)+'">$ '+fmtPct(chUsd)+'</div>':'')+
+      (chTl!==null?'<div class="hist-ch '+cls(chTl)+'" style="font-size:11px">₺ '+fmtPct(chTl)+'</div>':'')+
+      '<button class="del-btn" onclick="deleteEntry('+i+')">Sil</button>'+
+      '</div></div>';
+  }).join('')||'<div style="text-align:center;color:var(--muted);padding:20px">Henüz giriş yok</div>';
+}
+
+// ── GRAFİKLER ─────────────────────────────────────────────────────────────────
+function setRange(r,btn){
+  chartRange=r;
+  document.querySelectorAll('.range-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  drawCharts();
+}
+
+function drawCharts(){
+  if(entries.length<2)return;
+  var data=chartRange>0?entries.slice(-chartRange):entries;
+  drawLine1('chart-usd',data,function(e){return e.usd;},'#f7931a','$',180);
+  drawLine1('chart-tl',data,function(e){return e.tl;},'#00e5ff','₺',140);
+  // % grafik
+  var c=document.getElementById('chart-pct');
+  var ctx=c.getContext('2d');
+  var dpr=window.devicePixelRatio||1;
+  c.width=(c.offsetWidth||300)*dpr;c.height=140*dpr;ctx.scale(dpr,dpr);
+  var W=c.offsetWidth||300,H=140;ctx.clearRect(0,0,W,H);
+  var firstUsd=data[0].usd;var firstTl=data[0].tl||0;
+  var pctU=data.map(function(e){return (e.usd-firstUsd)/firstUsd*100;});
+  var pctT=firstTl>0?data.map(function(e){return e.tl>0?(e.tl-firstTl)/firstTl*100:0;}):null;
+  var allP=pctU.concat(pctT||[]);
+  var minP=Math.min.apply(null,allP)-1,maxP=Math.max.apply(null,allP)+1,rP=maxP-minP||1;
+  function toYp(v){return H-15-(v-minP)/rP*(H-30);}
+  function toXp(i){return 40+(i/(data.length-1||1))*(W-50);}
+  drawGrid(ctx,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(40,toYp(0));ctx.lineTo(W-10,toYp(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(90,106,122,.8)';ctx.font='9px Share Tech Mono';ctx.textAlign='right';
+  for(var g=0;g<5;g++){ctx.fillText((minP+g*(maxP-minP)/4).toFixed(1)+'%',36,H-15-g*(H-30)/4+4);}
+  drawPath(ctx,pctU,toXp,toYp,'#f7931a',2);
+  if(pctT)drawPath(ctx,pctT,toXp,toYp,'#00e5ff',2);
+  drawXLabels(ctx,data,toXp,H);
+}
+
+function drawLine1(id,data,valFn,color,prefix,h){
+  var c=document.getElementById(id);var ctx=c.getContext('2d');
+  var dpr=window.devicePixelRatio||1;
+  c.width=(c.offsetWidth||300)*dpr;c.height=h*dpr;ctx.scale(dpr,dpr);
+  var W=c.offsetWidth||300,H=h;ctx.clearRect(0,0,W,H);
+  var vals=data.map(valFn).filter(function(v){return v>0;});
+  if(vals.length<2)return;
+  var minV=Math.min.apply(null,vals)*0.98,maxV=Math.max.apply(null,vals)*1.02,range=maxV-minV||1;
+  function toY(v){return H-15-(v-minV)/range*(H-30);}
+  function toX(i){return 40+(i/(data.length-1||1))*(W-50);}
+  drawGrid(ctx,W,H);
+  ctx.fillStyle='rgba(90,106,122,.8)';ctx.font='9px Share Tech Mono';ctx.textAlign='right';
+  for(var g=0;g<5;g++){var v=minV+g*(maxV-minV)/4;ctx.fillText(prefix+(v>1000?(v/1000).toFixed(1)+'K':v.toFixed(0)),36,H-15-g*(H-30)/4+4);}
+  // Alan dolgusu
+  ctx.beginPath();ctx.moveTo(toX(0),H-15);
+  data.forEach(function(e,i){var v=valFn(e);if(v>0)ctx.lineTo(toX(i),toY(v));});
+  ctx.lineTo(toX(data.length-1),H-15);ctx.closePath();
+  var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,color+'40');grad.addColorStop(1,color+'00');
+  ctx.fillStyle=grad;ctx.fill();
+  // Çizgi
+  var vals2=data.map(valFn);drawPath(ctx,vals2,toX,toY,color,2);
+  drawXLabels(ctx,data,toX,H);
+}
+
+function drawGrid(ctx,W,H){ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;for(var g=0;g<5;g++){var y=15+g*(H-30)/4;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-10,y);ctx.stroke();}}
+function drawPath(ctx,vals,toX,toY,color,lw){ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.beginPath();vals.forEach(function(v,i){if(v>0){if(i===0||vals[i-1]<=0)ctx.moveTo(toX(i),toY(v));else ctx.lineTo(toX(i),toY(v));}});ctx.stroke();}
+function drawXLabels(ctx,data,toX,H){ctx.fillStyle='rgba(90,106,122,.8)';ctx.font='9px Share Tech Mono';ctx.textAlign='center';var step=Math.max(1,Math.floor(data.length/5));for(var i=0;i<data.length;i+=step){var d=new Date(data[i].date);ctx.fillText(d.getDate()+'/'+(d.getMonth()+1),toX(i),H-2);}}
+
+// ── KAYDET / YÜKLE ─────────────────────────────────────────────────────────────
+function save(){
+  try{
+    var d=JSON.stringify({entries:entries,kur:kurVal});
+    try{localStorage.setItem('kripto_takip',d);}catch(e){}
+    try{sessionStorage.setItem('kripto_takip',d);}catch(e){}
+    try{var enc=btoa(unescape(encodeURIComponent(d)));document.cookie='kripto_takip='+enc+';path=/;max-age=31536000;SameSite=Strict';}catch(e){}
+  }catch(e){}
+}
+function load(){
+  try{
+    var raw=null;
+    try{raw=localStorage.getItem('kripto_takip');}catch(e){}
+    if(!raw){try{raw=sessionStorage.getItem('kripto_takip');}catch(e){}}
+    if(!raw){try{var m=document.cookie.match(/kripto_takip=([^;]+)/);if(m)raw=decodeURIComponent(escape(atob(m[1])));}catch(e){}}
+    if(!raw)return;
+    var s=JSON.parse(raw);
+    entries=s.entries||[];
+    if(s.kur)kurVal=s.kur;
+  }catch(e){}
+}
+function showAlert(type,msg){var el=document.getElementById('alert');document.getElementById('alert-text').textContent=msg;el.className=type;el.style.display='flex';setTimeout(function(){el.style.display='none';},3000);}
+</script>
+</body>
+</html>
